@@ -1,5 +1,0 @@
-%% Input file
-% All units are expected in SI
-Height: 90
-Outer radius: 
-Inner radius:

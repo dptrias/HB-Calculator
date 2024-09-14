@@ -37,19 +37,23 @@ function hb_calculator
     txtSpeed.Value = HB.geom.speed;
     txtSpeed.ValueChangedFcn = @(txt, event) set_speed(HB, txt.Value);
 
-    pnlFluid = uipanel(fig, 'Title', 'Fluid Data', 'BackgroundColor','white', 'Position', [50, 220, 250, 110]);
+    pnlFluid = uipanel(fig, 'Title', 'Fluid Data', 'BackgroundColor','white', 'Position', [50, 190, 250, 140]);
 
-    lblViscosity = uilabel(pnlFluid, 'Text', 'Fluid viscosity (mPa s):', 'Position', [10, 55, 120, 26]);
-    txtViscosity = uieditfield(pnlFluid, 'numeric', 'Position', [135, 55, 100, 26]);
+    lblViscosity = uilabel(pnlFluid, 'Text', 'Fluid viscosity (mPa s):', 'Position', [10, 85, 130, 26]);
+    txtViscosity = uieditfield(pnlFluid, 'numeric', 'Position', [135, 85, 100, 26]);
     txtViscosity.Value = HB.fluid.viscosity;
     txtViscosity.ValueChangedFcn = @(txt, event) set_viscosity(HB, txt.Value);
 
-    lblExternal_Pressure = uilabel(pnlFluid, 'Text', 'External pressure (Pa):', 'Position', [10, 10, 135, 26]);
-    txtExternal_Pressure = uieditfield(pnlFluid, 'numeric', 'Position', [135, 10, 100, 26]);
-    txtExternal_Pressure.Value = HB.fluid.external_pressure;
-    txtExternal_Pressure.ValueChangedFcn = @(txt, event) set_external_pressure(HB, txt.Value);
+    lblReference_Pressure = uilabel(pnlFluid, 'Text', 'External pressure (Pa):', 'Position', [10, 10, 135, 26]);
+    txtReference_Pressure = uieditfield(pnlFluid, 'numeric', 'Position', [135, 10, 100, 26]);
+    txtReference_Pressure.Value = HB.fluid.reference_pressure;
+    txtReference_Pressure.ValueChangedFcn = @(txt, event) set_Reference_Pressure(HB, txt.Value);
 
-    pnlNumerical = uipanel(fig, 'Title', 'Numerical Settings', 'BackgroundColor','white', 'Position', [50, 110, 250, 110]);
+    btgBoundary_Condition = uibuttongroup(pnlFluid, 'Position', [10, 40, 135, 30], 'SelectionChangedFcn', @(bg, event) changeBoundaryCondition(HB, bg, lblReference_Pressure));
+    rbtOpen_Bearing = uiradiobutton(btgBoundary_Condition, 'Text', 'Open bearing', 'Position', [0, 15, 135, 15]);
+    rbtSealed_Bearing = uiradiobutton(btgBoundary_Condition, 'Text', 'Sealed bearing', 'Position', [0, 0, 135, 15]);
+
+    pnlNumerical = uipanel(fig, 'Title', 'Numerical Settings', 'BackgroundColor','white', 'Position', [50, 80, 250, 110]);
 
     lblNodesx = uilabel(pnlNumerical, 'Text', 'Axial nodes:', 'Position', [10, 55, 100, 26]);
     txtNodesx = uieditfield(pnlNumerical, 'numeric', 'Position', [135, 55, 100, 26]);
@@ -69,7 +73,7 @@ function hb_calculator
     lblLoad = uilabel(pnlResults, 'Text', 'Load (N):', 'Position', [10, 30, 230, 25]);
     lblMinPressure = uilabel(pnlResults, 'Text', 'Minumum pressure (Pa):', 'Position', [10, 10, 230, 25]);
 
-    btnCalculate = uibutton(fig, 'Text', 'Calculate', 'Position', [50, 60, 250, 30], 'BackgroundColor', [0.9, 0.3, 0.3], ...
+    btnCalculate = uibutton(fig, 'Text', 'Calculate', 'Position', [20, 60, 250, 30], 'BackgroundColor', [0.9, 0.3, 0.3], ...
         'ButtonPushedFcn', @(btnCalculate, event) calculateBottonPushed(HB, axsPressure, axsLoad, lblLoad, lblMinPressure));
 
 end
@@ -85,9 +89,16 @@ function updateResultsLabel(HB, lbl_load, lbl_mprs)
     lbl_mprs.Text = sprintf('%-28s %10.2f','Minumum pressure (Pa):', min(HB.pressure(:)));
 end
 
-function updateColorDensity(HB, axes_pressure, axes_load, color_density)
-    HB.plot(axes_pressure, axes_load, color_density);
+function changeBoundaryCondition(HB, btg_boundary_condition, lbl_ref_prs)
+    if "Open bearing" == btg_boundary_condition.SelectedObject.Text 
+        HB.fluid.boundary_condition = 1;
+        lbl_ref_prs.Text = 'External pressure (Pa):';
+    elseif "Sealed bearing" == btg_boundary_condition.SelectedObject.Text 
+        HB.fluid.boundary_condition = 2;
+        lbl_ref_prs.Text = 'Injection pressure (Pa):';
+    end
 end
+
 %% Setters
 function set_length(HB, txt)
     HB.geom.length = txt;
@@ -113,8 +124,8 @@ function set_viscosity(HB, txt)
     HB.fluid.viscosity = txt;
 end
 
-function set_external_pressure(HB, txt)
-    HB.fluid.external_pressure = txt;
+function set_Reference_Pressure(HB, txt)
+    HB.fluid.reference_pressure = txt;
 end
 
 function set_nodesx(HB, txt)

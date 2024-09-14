@@ -25,8 +25,8 @@ classdef HydraulicBearing < handle
             scaling(HB);
         end
 
-        function plot(HB, ax_p, ax_load, color_density)
-            plot_pressure(HB, ax_p, color_density);
+        function plot(HB, ax_prs, ax_load)
+            plot_pressure(HB, ax_prs);
             %plot_load(HB, ax_load);
         end
         
@@ -133,11 +133,10 @@ function scaling(HB)
     % HB.load = HB.load * 
 end
 
-function plot_pressure(HB, ax_p, color_density)
+function plot_pressure(HB, ax_p)
     imagesc(ax_p, HB.pressure)
-    colormap(ax_p, parula(color_density))
-    clim(ax_p, [min(HB.pressure(:)),max(HB.pressure(:))])
-    colorbar(ax_p, 'Ticks', linspace(min(HB.pressure(:)),max(HB.pressure(:)),color_density+1))
+    % clim(ax_p, [min(HB.pressure(:)),max(HB.pressure(:))])
+    colorbar(ax_p)
     xlabel(ax_p, "\theta")
     xticks(ax_p, linspace(1,HB.numerical.Ntheta+1,5))
     xticklabels(ax_p, {"-\pi","-\pi/2","0","\pi/2","\pi"})

@@ -37,7 +37,7 @@ function hb_calculator
     txtSpeed.Value = HB.geom.speed;
     txtSpeed.ValueChangedFcn = @(txt, event) set_speed(HB, txt.Value);
 
-    pnlFluid = uipanel(fig, "Title", "Fluid Data", 'BackgroundColor','white', 'Position', [50, 220, 250, 110]);
+    pnlFluid = uipanel(fig, 'Title', 'Fluid Data', 'BackgroundColor','white', 'Position', [50, 220, 250, 110]);
 
     lblViscosity = uilabel(pnlFluid, 'Text', 'Fluid viscosity (mPa s):', 'Position', [10, 55, 120, 26]);
     txtViscosity = uieditfield(pnlFluid, 'numeric', 'Position', [135, 55, 100, 26]);
@@ -49,7 +49,7 @@ function hb_calculator
     txtExternal_Pressure.Value = HB.fluid.external_pressure;
     txtExternal_Pressure.ValueChangedFcn = @(txt, event) set_external_pressure(HB, txt.Value);
 
-    pnlNumerical = uipanel(fig, "Title", "Numerical Settings", 'BackgroundColor','white', 'Position', [50, 110, 250, 110]);
+    pnlNumerical = uipanel(fig, 'Title', 'Numerical Settings', 'BackgroundColor','white', 'Position', [50, 110, 250, 110]);
 
     lblNodesx = uilabel(pnlNumerical, 'Text', 'Axial nodes:', 'Position', [10, 55, 100, 26]);
     txtNodesx = uieditfield(pnlNumerical, 'numeric', 'Position', [135, 55, 100, 26]);
@@ -64,15 +64,25 @@ function hb_calculator
     %% Solve 
     axsPressure = uiaxes(fig, 'Position', [350, 190, 600, 400]);  
     axsLoad = uiaxes(fig,'Position', [350, 30, 70, 70]);
-    sldColorDensity = uislider(fig, 'Position', [350 180 200 3], 'Limits', [5 30],'Value', 10, 'ValueChangedFcn', @(src, event) updateColorDensity(HB, axsPressure, axsLoad, src.Value));
+    
+    pnlResults = uipanel(fig, 'Title', 'Results', 'BackgroundColor','white', 'Position', [360, 100, 250, 80]);
+    lblLoad = uilabel(pnlResults, 'Text', 'Load (N):', 'Position', [10, 30, 230, 25]);
+    lblMinPressure = uilabel(pnlResults, 'Text', 'Minumum pressure (Pa):', 'Position', [10, 10, 230, 25]);
+
     btnCalculate = uibutton(fig, 'Text', 'Calculate', 'Position', [50, 60, 250, 30], 'BackgroundColor', [0.9, 0.3, 0.3], ...
-        'ButtonPushedFcn', @(btnCalculate, event) calculateBottonPushed(HB, axsPressure, axsLoad, sldColorDensity.Value));
+        'ButtonPushedFcn', @(btnCalculate, event) calculateBottonPushed(HB, axsPressure, axsLoad, lblLoad, lblMinPressure));
 
 end
 
-function calculateBottonPushed(HB, axes_pressure, axes_load, color_density)
+function calculateBottonPushed(HB, axes_pressure, axes_load, lbl_load, lbl_mprs)
     HB.solve();
-    HB.plot(axes_pressure, axes_load, color_density);
+    HB.plot(axes_pressure, axes_load);
+    updateResultsLabel(HB, lbl_load, lbl_mprs);
+end
+
+function updateResultsLabel(HB, lbl_load, lbl_mprs)
+    lbl_load.Text = sprintf('%-45s %10.2f','Load (N):', HB.load);
+    lbl_mprs.Text = sprintf('%-28s %10.2f','Minumum pressure (Pa):', min(HB.pressure(:)));
 end
 
 function updateColorDensity(HB, axes_pressure, axes_load, color_density)

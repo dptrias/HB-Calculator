@@ -1,5 +1,5 @@
 # HB-Calculator
-Hydrualic Bearing calculator
+MATLAB application for determining the load of hydrualic bearings. To execute the application run `hb_calculator.m` from the MATLAB console. The theoretical formulation is described in the following paragraphs.
 
 $$
 \frac{\partial}{\partial\theta} \left[ \left( 1 + \varepsilon \cos\theta \right)^3 \frac{\partial p}{\partial\theta} \right] + \left( \frac{D}{L} \right)^2 \left( 1 + \varepsilon \cos\theta \right)^3 \frac{\partial^2 p}{\partial \left( \frac{x}{L/2} \right)^2} = - \frac{6\mu\Omega R^2}{(R-R_I)^2} \varepsilon \sin\theta

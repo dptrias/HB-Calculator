@@ -7,10 +7,15 @@
 function hb_calculator 
     HB = HydraulicBearing;
 
-    fig = uifigure('Name', sprintf('HB-Calculator (version %s)',HB.version), 'Position', [100, 100, 1000, 600]);
+    fig = uifigure('Name', sprintf('HB-Calculator (version %s)',HB.version), 'Position', [100, 100, 1000, 620]);
     
+    tabGroup = uitabgroup(fig, 'Position', [0, 0, 1000, 620]);
+    tabLoadCalculator = uitab(tabGroup, 'Title', 'Load Calculator');
+    tabBearingDesigner = uitab(tabGroup, 'Title', 'Bearing Designer');
+
+    % ============================= Load Calculator ======================================
     %% Input Data
-    pnlGeometry = uipanel(fig,'Title','Bearing Data', 'BackgroundColor','white', 'Position', [50, 330, 250, 250]);
+    pnlGeometry = uipanel(tabLoadCalculator,'Title','Bearing Data', 'BackgroundColor','white', 'Position', [50, 330, 250, 250]);
 
     lblLength = uilabel(pnlGeometry, 'Text', 'Length (mm):', 'Position', [10, 194, 100, 26]);
     txtLength = uieditfield(pnlGeometry, 'numeric', 'Position', [135, 194, 100, 26]);
@@ -37,19 +42,24 @@ function hb_calculator
     txtSpeed.Value = HB.geom.speed;
     txtSpeed.ValueChangedFcn = @(txt, event) set_speed(HB, txt.Value);
 
-    pnlFluid = uipanel(fig, 'Title', 'Fluid Data', 'BackgroundColor','white', 'Position', [50, 220, 250, 110]);
+    pnlFluid = uipanel(tabLoadCalculator, 'Title', 'Fluid Data', 'BackgroundColor','white', 'Position', [50, 185, 250, 150]);
 
-    lblViscosity = uilabel(pnlFluid, 'Text', 'Fluid viscosity (mPa s):', 'Position', [10, 55, 120, 26]);
-    txtViscosity = uieditfield(pnlFluid, 'numeric', 'Position', [135, 55, 100, 26]);
+    lblViscosity = uilabel(pnlFluid, 'Text', 'Fluid viscosity (mPa s):', 'Position', [10, 90, 130, 26]);
+    txtViscosity = uieditfield(pnlFluid, 'numeric', 'Position', [135, 90, 100, 26]);
     txtViscosity.Value = HB.fluid.viscosity;
     txtViscosity.ValueChangedFcn = @(txt, event) set_viscosity(HB, txt.Value);
+    
+    lblReference_Pressure = uilabel(pnlFluid, 'Text', 'External pressure (Pa):', 'Position', [10, 10, 135, 26]);
+    txtReference_Pressure = uieditfield(pnlFluid, 'numeric', 'Position', [135, 10, 100, 26]);
+    txtReference_Pressure.Value = HB.fluid.reference_pressure;
+    txtReference_Pressure.ValueChangedFcn = @(txt, event) set_Reference_Pressure(HB, txt.Value);
 
-    lblExternal_Pressure = uilabel(pnlFluid, 'Text', 'External pressure (Pa):', 'Position', [10, 10, 135, 26]);
-    txtExternal_Pressure = uieditfield(pnlFluid, 'numeric', 'Position', [135, 10, 100, 26]);
-    txtExternal_Pressure.Value = HB.fluid.external_pressure;
-    txtExternal_Pressure.ValueChangedFcn = @(txt, event) set_external_pressure(HB, txt.Value);
+    lblBoundary_Condition = uilabel(pnlFluid, 'Text', 'Boundary condition:', 'Position', [10, 50, 150, 26]);
+    btgBoundary_Condition = uibuttongroup(pnlFluid, 'Position', [135, 40, 100, 45], 'SelectionChangedFcn', @(bg, event) changeBoundaryCondition(HB, bg, lblReference_Pressure));
+    rbtOpen_Bearing = uiradiobutton(btgBoundary_Condition, 'Text', 'Open bearing', 'Position', [0, 25, 135, 15]);
+    rbtSealed_Bearing = uiradiobutton(btgBoundary_Condition, 'Text', 'Sealed bearing', 'Position', [0, 5, 135, 15]);
 
-    pnlNumerical = uipanel(fig, 'Title', 'Numerical Settings', 'BackgroundColor','white', 'Position', [50, 110, 250, 110]);
+    pnlNumerical = uipanel(tabLoadCalculator, 'Title', 'Numerical Settings', 'BackgroundColor','white', 'Position', [50, 80, 250, 110]);
 
     lblNodesx = uilabel(pnlNumerical, 'Text', 'Axial nodes:', 'Position', [10, 55, 100, 26]);
     txtNodesx = uieditfield(pnlNumerical, 'numeric', 'Position', [135, 55, 100, 26]);
@@ -62,15 +72,19 @@ function hb_calculator
     txtNodestheta.ValueChangedFcn = @(txt, event) set_nodestheta(HB, txt.Value);
 
     %% Solve 
-    axsPressure = uiaxes(fig, 'Position', [350, 190, 600, 400]);  
-    axsLoad = uiaxes(fig,'Position', [350, 30, 70, 70]);
+    axsPressure = uiaxes(tabLoadCalculator, 'Position', [350, 190, 600, 400]);  
+    axsLoad = uiaxes(tabLoadCalculator,'Position', [350, 30, 70, 70]);
     
-    pnlResults = uipanel(fig, 'Title', 'Results', 'BackgroundColor','white', 'Position', [360, 100, 250, 80]);
+    pnlResults = uipanel(tabLoadCalculator, 'Title', 'Results', 'BackgroundColor','white', 'Position', [360, 100, 250, 80]);
     lblLoad = uilabel(pnlResults, 'Text', 'Load (N):', 'Position', [10, 30, 230, 25]);
     lblMinPressure = uilabel(pnlResults, 'Text', 'Minumum pressure (Pa):', 'Position', [10, 10, 230, 25]);
 
-    btnCalculate = uibutton(fig, 'Text', 'Calculate', 'Position', [50, 60, 250, 30], 'BackgroundColor', [0.9, 0.3, 0.3], ...
+    btnCalculate = uibutton(tabLoadCalculator, 'Text', 'Calculate', 'Position', [50, 30, 250, 30], 'BackgroundColor', [0.9, 0.3, 0.3], ...
         'ButtonPushedFcn', @(btnCalculate, event) calculateBottonPushed(HB, axsPressure, axsLoad, lblLoad, lblMinPressure));
+
+    % ============================== Bearing Designer ====================================
+    %% Input Data
+    pnlParameters = 
 
 end
 
@@ -85,9 +99,16 @@ function updateResultsLabel(HB, lbl_load, lbl_mprs)
     lbl_mprs.Text = sprintf('%-28s %10.2f','Minumum pressure (Pa):', min(HB.pressure(:)));
 end
 
-function updateColorDensity(HB, axes_pressure, axes_load, color_density)
-    HB.plot(axes_pressure, axes_load, color_density);
+function changeBoundaryCondition(HB, btg_boundary_condition, lbl_ref_prs)
+    if "Open bearing" == btg_boundary_condition.SelectedObject.Text 
+        HB.fluid.boundary_condition = 1;
+        lbl_ref_prs.Text = 'External pressure (Pa):';
+    elseif "Sealed bearing" == btg_boundary_condition.SelectedObject.Text 
+        HB.fluid.boundary_condition = 2;
+        lbl_ref_prs.Text = 'Injection pressure (Pa):';
+    end
 end
+
 %% Setters
 function set_length(HB, txt)
     HB.geom.length = txt;
@@ -113,8 +134,8 @@ function set_viscosity(HB, txt)
     HB.fluid.viscosity = txt;
 end
 
-function set_external_pressure(HB, txt)
-    HB.fluid.external_pressure = txt;
+function set_Reference_Pressure(HB, txt)
+    HB.fluid.reference_pressure = txt;
 end
 
 function set_nodesx(HB, txt)

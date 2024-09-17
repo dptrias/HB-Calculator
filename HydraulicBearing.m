@@ -6,7 +6,7 @@
 classdef HydraulicBearing < handle
         
     properties
-        version = '2024-09-12';
+        version = '2024-09-17';
         geom = bearing_geom();
         fluid = fluid_properties();
         numerical = numerical_settings();
@@ -49,7 +49,8 @@ end
 
 function F = fluid_properties()
     F.viscosity = 1; % mPa s
-    F.external_pressure = 101325; % Pa
+    F.reference_pressure = 101325; % Pa
+    F.boundary_condition = 1; % 1-Open(Deafault) / 2-Sealed
 end
 
 function [phi, f] = solve_dimensionless(HB)
@@ -127,7 +128,7 @@ function scaling(HB)
     Omega = HB.geom.speed*2*pi/60; % rad/s
     R = HB.geom.radius*1e-3; % m
     R_I = HB.geom.shaft_radius*1e-3; % m
-    HB.pressure = (6*mu*Omega*R^2*HB.geom.excentricity/(R-R_I)^2)*HB.pressure + HB.fluid.external_pressure; % Pa
+    HB.pressure = (6*mu*Omega*R^2*HB.geom.excentricity/(R-R_I)^2)*HB.pressure + HB.fluid.reference_pressure; % Pa
     % Load
     % TODO
     % HB.load = HB.load * 

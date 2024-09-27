@@ -6,7 +6,6 @@
 classdef HydraulicBearing < handle
         
     properties
-        version = '2024-09-17';
         geom = bearing_geom();
         fluid = fluid_properties();
         numerical = numerical_settings();
@@ -25,9 +24,8 @@ classdef HydraulicBearing < handle
             scaling(HB);
         end
 
-        function plot(HB, ax_prs, ax_load)
+        function plot(HB, ax_prs)
             plot_pressure(HB, ax_prs);
-            %plot_load(HB, ax_load);
         end
         
     end

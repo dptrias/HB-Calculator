@@ -4,10 +4,10 @@
 % ====================================================================================
 
 %% MAIN
-function hb_calculator 
-    HB = HydraulicBearing;
+function hb_calculator
+    version = '2024-09-17';
 
-    fig = uifigure('Name', sprintf('HB-Calculator (version %s)',HB.version), 'Position', [100, 100, 1000, 620]);
+    fig = uifigure('Name', sprintf('HB-Calculator (version %s)', version), 'Position', [100, 100, 1000, 620]);
     
     tabGroup = uitabgroup(fig, 'Position', [0, 0, 1000, 620]);
     tabLoadCalculator = uitab(tabGroup, 'Title', 'Load Calculator');
@@ -15,6 +15,7 @@ function hb_calculator
 
     % ============================= Load Calculator ======================================
     %% Input Data
+    HB = HydraulicBearing;
     pnlGeometry = uipanel(tabLoadCalculator,'Title','Bearing Data', 'BackgroundColor','white', 'Position', [50, 330, 250, 250]);
 
     lblLength = uilabel(pnlGeometry, 'Text', 'Length (mm):', 'Position', [10, 194, 100, 26]);
@@ -73,24 +74,33 @@ function hb_calculator
 
     %% Solve 
     axsPressure = uiaxes(tabLoadCalculator, 'Position', [350, 190, 600, 400]);  
-    axsLoad = uiaxes(tabLoadCalculator,'Position', [350, 30, 70, 70]);
     
     pnlResults = uipanel(tabLoadCalculator, 'Title', 'Results', 'BackgroundColor','white', 'Position', [360, 100, 250, 80]);
     lblLoad = uilabel(pnlResults, 'Text', 'Load (N):', 'Position', [10, 30, 230, 25]);
     lblMinPressure = uilabel(pnlResults, 'Text', 'Minumum pressure (Pa):', 'Position', [10, 10, 230, 25]);
 
     btnCalculate = uibutton(tabLoadCalculator, 'Text', 'Calculate', 'Position', [50, 30, 250, 30], 'BackgroundColor', [0.9, 0.3, 0.3], ...
-        'ButtonPushedFcn', @(btnCalculate, event) calculateBottonPushed(HB, axsPressure, axsLoad, lblLoad, lblMinPressure));
+        'ButtonPushedFcn', @(btnCalculate, event) calculateBottonPushed(HB, axsPressure, lblLoad, lblMinPressure));
 
     % ============================== Bearing Designer ====================================
     %% Input Data
-    pnlParameters = 
+    BD = BearingDesigner;
+    pnlParameters = uipanel(tabBearingDesigner,'Title','Dimensionless Parameters', 'BackgroundColor','white', 'Position', [50, 330, 250, 250]);
 
+    lblElongation = uilabel(pnlParameters, 'Text', 'Elongation:', 'Position', [10, 194, 100, 26]);
+    txtElongation = uieditfield(pnlParameters, 'numeric', 'Position', [135, 194, 100, 26]);
+    txtElongation.Value = BD.parameters.elongation;
+    txtElongation.ValueChangedFcn = @(txt, event) set_elongation(BD, txt.Value);
+
+    lblExcentricity = uilabel(pnlParameters, 'Text', 'Excentricity:', 'Position', [10, 148, 100, 26]);
+    txtExcentricity = uieditfield(pnlParameters, 'numeric', 'Position', [135, 148, 100, 26]);
+    txtExcentricity.Value = BD.parameters.excentricity;
+    txtExcentricity.ValueChangedFcn = @(txt, event) set_excentricity(BD, txt.Value);
 end
 
-function calculateBottonPushed(HB, axes_pressure, axes_load, lbl_load, lbl_mprs)
+function calculateBottonPushed(HB, axes_pressure, lbl_load, lbl_mprs)
     HB.solve();
-    HB.plot(axes_pressure, axes_load);
+    HB.plot(axes_pressure);
     updateResultsLabel(HB, lbl_load, lbl_mprs);
 end
 

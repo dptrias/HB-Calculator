@@ -17,11 +17,10 @@ classdef BearingDesigner < handle
         end
 
         function load(BD)
-            tol = 1e-8;
             if "excentricity" == BD.parameters.last_updated
-                load_excentricity(BD, tol);
+                load_excentricity(BD);
             elseif "elongation" == BD.parameters.last_updated
-                load_elongation(BD, tol);
+                load_elongation(BD);
             end
         end
     end
@@ -43,32 +42,48 @@ function data = get_data()
     data = load("e0001-0999_L001-100.mat");
 end
 
-function load_excentricity(BD, tol)
-    exc_index = (abs(BD.data.epsilon(:) - BD.parameters.excentricity) < tol);
-    if any(exc_index)
-        f_index = (abs(BD.data.f(:, exc_index) - BD.parameters.load) < tol);
-        if any(f_index)
-            disp(f_index);
-            BD.parameters.elongation = BD.data.Lambda(f_index);
-        else
-            disp('I did not find any value')
-        end
-    else
-        disp('I did not find any value')
-    end
+function load_excentricity(BD)
+    [~, exc_index] = min(abs(BD.data.epsilon(:) - BD.parameters.excentricity));
+    BD.parameters.excentricity = BD.data.epsilon(exc_index);
+    [~, f_index] = min(abs(BD.data.f(:, exc_index) - BD.parameters.load));
+    BD.parameters.load = BD.data.f(f_index);
+    BD.parameters.elongation = BD.data.Lambda(f_index);
+    disp(BD.parameters)
+    % exc_index = (abs(BD.data.epsilon(:) - BD.parameters.excentricity) < tol);
+    % if any(exc_index)
+    %     f_index = (abs(BD.data.f(:, exc_index) - BD.parameters.load) < tol);
+    %     if any(f_index)
+    %         disp(f_index);
+    %         BD.parameters.elongation = BD.data.Lambda(f_index);
+    %     else
+    %         tol = tol + 5e-10;
+    %         disp('I did not find any load value')
+    %         load_excentricity(BD, tol)
+    %     end
+    % else
+    %     tol = tol + 5e-10;
+    %     disp('I did not find any epsilon value')
+    %     load_excentricity(BD, tol)
+    % end
 end
 
-function load_elongation(BD, tol)
-    elo_index = (abs(BD.data.Lambda(:) - BD.parameters.elongation) < tol);
-    if any(elo_index)
-        f_index = (abs(BD.data.f(elo_index, :) - BD.parameters.load) < tol);
-        if any(f_index)
-            disp(f_index')
-            BD.parameters.excentricity = BD.data.epsilon(f_index');
-        else
-            disp('I did not find any value')
-        end
-    else
-        disp('I did not find any value')
-    end
+function load_elongation(BD)
+    [~, elo_index] = min(abs(BD.data.Lambda(:) - BD.parameters.elongation));
+    BD.parameters.elongation = BD.data.Lambda(elo_index);
+    [~, f_index] = min(abs(BD.data.f(elo_index, :) - BD.parameters.load));
+    BD.parameters.load = BD.data.f(f_index);
+    BD.parameters.excentricity = BD.data.epsilon(f_index');
+    disp(BD.parameters)
+    % elo_index = (abs(BD.data.Lambda(:) - BD.parameters.elongation) < tol);
+    % if any(elo_index)
+    %     f_index = (abs(BD.data.f(elo_index, :) - BD.parameters.load) < tol);
+    %     if any(f_index)
+    %         disp(f_index')
+    %         BD.parameters.excentricity = BD.data.epsilon(f_index');
+    %     else
+    %         disp('I did not find any value')
+    %     end
+    % else
+    %     disp('I did not find any value')
+    % end
 end

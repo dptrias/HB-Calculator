@@ -90,12 +90,18 @@ function hb_calculator
     lblElongation = uilabel(pnlParameters, 'Text', 'Elongation:', 'Position', [10, 194, 100, 26]);
     txtElongation = uieditfield(pnlParameters, 'numeric', 'Position', [135, 194, 100, 26]);
     txtElongation.Value = BD.parameters.elongation;
-    txtElongation.ValueChangedFcn = @(txt, event) set_elongation(BD, txt.Value);
+    txtElongation.ValueChangedFcn = @(txt, event) update_elongation(BD, txt.Value);
 
     lblExcentricity = uilabel(pnlParameters, 'Text', 'Excentricity:', 'Position', [10, 148, 100, 26]);
     txtExcentricity = uieditfield(pnlParameters, 'numeric', 'Position', [135, 148, 100, 26]);
     txtExcentricity.Value = BD.parameters.excentricity;
-    txtExcentricity.ValueChangedFcn = @(txt, event) set_excentricity(BD, txt.Value);
+    txtExcentricity.ValueChangedFcn = @(txt, event) update_excentricity(BD, txt.Value);
+
+    lblAdimensional_Load = uilabel(pnlParameters, 'Text', 'Adimensional Load:', 'Position', [10, 112, 150, 26]);
+    txtAdimensional_Load = uieditfield(pnlParameters, 'numeric', 'Position', [135, 112, 100, 26]);
+    txtAdimensional_Load.Value = BD.parameters.load;
+    txtAdimensional_Load.ValueChangedFcn = @(txt, event) update_load(BD, txt.Value);
+    
 end
 
 function calculateBottonPushed(HB, axes_pressure, lbl_load, lbl_mprs)
@@ -155,3 +161,23 @@ end
 function set_nodestheta(HB, txt)
     HB.numerical.Ntheta = txt;
 end
+
+%% Update
+
+function update_elongation(BD, txt)
+    BD.parameters.elongation = txt;
+    BD.parameters.last_updated = 'elongation';
+    BD.load();
+end
+
+function update_excentricity(BD, txt)
+    BD.parameters.excentricity = txt;
+    BD.parameters.last_updated = 'excentricity';
+    BD.load();
+    
+end
+
+function update_load(BD, txt)
+    BD.parameters.load = txt;
+    BD.load();
+end 

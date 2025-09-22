@@ -5,7 +5,7 @@
 
 %% MAIN
 function hb_calculator
-    version = '2024-09-17';
+    version = '2025-09-22';
 
     fig = uifigure('Name', sprintf('HB-Calculator (version %s)', version), 'Position', [100, 100, 1000, 620]);
     
@@ -90,16 +90,17 @@ function hb_calculator
     lblElongation = uilabel(pnlParameters, 'Text', 'Elongation:', 'Position', [10, 194, 100, 26]);
     txtElongation = uieditfield(pnlParameters, 'numeric', 'Position', [135, 194, 100, 26]);
     txtElongation.Value = BD.parameters.elongation;
-    txtElongation.ValueChangedFcn = @(txt, event) update_elongation(BD, txt.Value);
-
+    
     lblExcentricity = uilabel(pnlParameters, 'Text', 'Excentricity:', 'Position', [10, 148, 100, 26]);
     txtExcentricity = uieditfield(pnlParameters, 'numeric', 'Position', [135, 148, 100, 26]);
     txtExcentricity.Value = BD.parameters.excentricity;
-    txtExcentricity.ValueChangedFcn = @(txt, event) update_excentricity(BD, txt.Value);
-
+    
     lblAdimensional_Load = uilabel(pnlParameters, 'Text', 'Adimensional Load:', 'Position', [10, 112, 150, 26]);
     txtAdimensional_Load = uieditfield(pnlParameters, 'numeric', 'Position', [135, 112, 100, 26]);
     txtAdimensional_Load.Value = BD.parameters.load;
+    
+    txtElongation.ValueChangedFcn = @(txt, event) update_elongation(BD, txt, txtExcentricity);
+    txtExcentricity.ValueChangedFcn = @(txt, event) update_excentricity(BD, txt, txtElongation);
     txtAdimensional_Load.ValueChangedFcn = @(txt, event) update_load(BD, txt.Value);
     
 end
@@ -164,14 +165,18 @@ end
 
 %% Update
 
-function update_elongation(BD, txt)
-    BD.parameters.elongation = txt;
+function update_elongation(BD, txt_elo, txt_exc)
+    BD.parameters.elongation = txt_elo.Value;
+    txt_elo.FontColor = [0.1294 0.1294 0.1294];
+    txt_exc.FontColor = '#EA5547';
     BD.parameters.last_updated = 'elongation';
     BD.load();
 end
 
-function update_excentricity(BD, txt)
-    BD.parameters.excentricity = txt;
+function update_excentricity(BD, txt_exc, txt_elo)
+    BD.parameters.excentricity = txt_exc.Value;
+    txt_exc.FontColor = [0.1294 0.1294 0.1294];
+    txt_elo.FontColor = '#EA5547';
     BD.parameters.last_updated = 'excentricity';
     BD.load();
     

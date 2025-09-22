@@ -13,7 +13,7 @@ classdef BearingDesigner < handle
     methods 
         % Constructor
         function BD = BearingDesigner()
-            % Defualt
+            % Default
         end
 
         function load(BD)
@@ -46,9 +46,11 @@ function load_excentricity(BD)
     [~, exc_index] = min(abs(BD.data.epsilon(:) - BD.parameters.excentricity));
     BD.parameters.excentricity = BD.data.epsilon(exc_index);
     [~, f_index] = min(abs(BD.data.f(:, exc_index) - BD.parameters.load));
-    BD.parameters.load = BD.data.f(f_index);
+    BD.parameters.load = BD.data.f(f_index, exc_index);
     BD.parameters.elongation = BD.data.Lambda(f_index);
     disp(BD.parameters)
+    fprintf('exc idx %i \n', exc_index)
+    fprintf('elo idx %i \n', f_index)
     % exc_index = (abs(BD.data.epsilon(:) - BD.parameters.excentricity) < tol);
     % if any(exc_index)
     %     f_index = (abs(BD.data.f(:, exc_index) - BD.parameters.load) < tol);
@@ -71,9 +73,11 @@ function load_elongation(BD)
     [~, elo_index] = min(abs(BD.data.Lambda(:) - BD.parameters.elongation));
     BD.parameters.elongation = BD.data.Lambda(elo_index);
     [~, f_index] = min(abs(BD.data.f(elo_index, :) - BD.parameters.load));
-    BD.parameters.load = BD.data.f(f_index);
-    BD.parameters.excentricity = BD.data.epsilon(f_index');
+    BD.parameters.load = BD.data.f(elo_index, f_index);
+    BD.parameters.excentricity = BD.data.epsilon(f_index);
     disp(BD.parameters)
+    fprintf('elo idx %i \n', elo_index)
+    fprintf('exc idx %i \n', f_index)
     % elo_index = (abs(BD.data.Lambda(:) - BD.parameters.elongation) < tol);
     % if any(elo_index)
     %     f_index = (abs(BD.data.f(elo_index, :) - BD.parameters.load) < tol);
